@@ -1,5 +1,29 @@
 # Votes
 
+This is the example of how to query the "count" of a field from other table on Elixir Ecto
+
+'''
+    votes_count = Repo.all(from issue in Issue,
+              as: :issue,
+              left_lateral_join: vote in subquery(from v in Vote,
+                where: [issue_id:  parent_as(:issue).id],
+                group_by: [v.issue_id, v.is_agree],
+                select: %{
+                  count: count("*"),
+                  is_agree: v.is_agree
+                }
+              ),
+              select: %{
+                issue_id: issue.id,
+                count: vote.count,
+                is_agree: vote.is_agree,
+                issue_description: issue.description
+              }
+    )
+      |> map_count_result()
+
+'''
+
 To start your Phoenix server:
 
   * Install dependencies with `mix deps.get`
